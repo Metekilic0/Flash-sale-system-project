@@ -1,0 +1,80 @@
+{
+  "title": "Flash Sale Pipeline - Overview",
+  "uid": "flashsale-overview",
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 3,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Events per batch (total / legitimate / flagged)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+      "targets": [{
+        "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+        "format": "time_series",
+        "rawSql": "SELECT batch_ts AS time, total_events AS \"total\", legit_events AS \"legitimate\", flagged_events AS \"flagged\" FROM pipeline_metrics ORDER BY batch_ts",
+        "rawQuery": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 2,
+      "title": "Micro-batch processing latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+      "targets": [{
+        "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+        "format": "time_series",
+        "rawSql": "SELECT batch_ts AS time, processing_time_ms AS \"ms\" FROM pipeline_metrics ORDER BY batch_ts",
+        "rawQuery": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 3,
+      "title": "Distinct flagged (bot-like) IPs per batch",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+      "targets": [{
+        "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+        "format": "time_series",
+        "rawSql": "SELECT batch_ts AS time, distinct_flagged_ips AS \"bot_ips\", distinct_ips AS \"total_ips\" FROM pipeline_metrics ORDER BY batch_ts",
+        "rawQuery": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 4,
+      "title": "Top 10 products by legitimate activity",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+      "targets": [{
+        "datasource": { "type": "postgres", "uid": "P4DDBD0E5C0A90EAD" },
+        "format": "table",
+        "rawSql": "SELECT product_id, action, SUM(event_count) AS total FROM events_agg GROUP BY product_id, action ORDER BY total DESC LIMIT 10",
+        "rawQuery": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 5,
+      "title": "Kafka - messages consumed (rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "expr": "sum(rate(kafka_topic_partition_current_offset{topic=\"clickstream-events\"}[1m]))",
+        "legendFormat": "events/sec",
+        "refId": "A"
+      }]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+pc@DESKTOP-RLBSHTA:/mnt/c/Users/pc/Desktop/bil401/flash-sale-pipeline$ cat > monitoring/grafana/provisioning/datasources/datasource.yml << 'YAML'
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: false
+    editable: true
+
+  - name: Citus (Postgres)
+    type: postgres
+    access: proxy
+    url: citus-coordinator:5432
+    database: citus
+    user: citus
+    isDefault: true
+    editable: true
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+      timescaledb: false
+    secureJsonData:
+      password: citus_pw_change_me
+YAML
+
+docker compose rm -f grafana
+docker volume rm flash-sale-pipeline_grafana-data
+docker compose up -d grafana
+sleep 20
+
+# Datasource'u tekrar API ile güncelle
+curl -s -u admin:admin_change_me \
+  http://localhost:3000/api/datasources | python3 -m json.tool | grep -E '"id"|"name"|"database"'
+No stopped containers
+Error response from daemon: remove flash-sale-pipeline_grafana-data: volume is in use - [05da84d242e5841fbb101cf8f820166ce6a8ad27fef95832ae5035bc4a7070e1]
+[+] up 7/7
+ ✔ Container citus-worker-2    Healthy                                                                                                                0.6s
+ ✔ Container citus-coordinator Healthy                                                                                                                0.6s
+ ✔ Container citus-worker-1    Healthy                                                                                                                0.6s
+ ✔ Container prometheus        Running                                                                                                                0.0s
+ ✔ Container postgres-exporter Running                                                                                                                0.0s
+ ✔ Container grafana           Running                                                                                                                0.0s
+ ✔ Container citus-init        Exited    

@@ -1,0 +1,24 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: false
+    editable: true
+
+  - name: Citus (Postgres)
+    type: postgres
+    access: proxy
+    url: citus-coordinator:5432
+    database: citus
+    user: citus
+    isDefault: true
+    editable: true
+    jsonData:
+      database: citus
+      sslmode: disable
+      postgresVersion: 1500
+    secureJsonData:
+      password: citus_pw_change_me
